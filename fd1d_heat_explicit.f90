@@ -1,6 +1,12 @@
 program fd1d_heat_explicit_prb
 
       use Types_mod
+      use RHS_mod
+
+      use CFL_mod
+      use IO_mod
+
+      use Solver_mod
      
       implicit none
 
@@ -111,153 +117,6 @@ program fd1d_heat_explicit_prb
       call r8vec_write( 'x_test01.txt', x )
 
     contains
-
-    function func( j, x ) result ( d )
-      integer(kind=SI), intent(in) :: j
-      real(kind=DP), dimension(:), intent(in) :: x
-
-      real(kind=DP):: d
-
-      d = 0.0_DP
-    end function func
-
-    subroutine fd1d_heat_explicit( x, t, dt, cfl, h, h_new )
-
-      implicit none
-
-      !Subroutine arguments      
-      real(kind=DP), intent(in) :: cfl
-      real(kind=DP), intent(in) :: dt
-      real(kind=DP), dimension(:), intent(in) :: h
-      real(kind=DP), dimension(:), intent(out) :: h_new
-      real(kind=DP), intent(in) :: t
-      real(kind=DP), dimension(:), intent(in) :: x
-
-      !Local arguments
-      integer(kind=SI) :: j
-      real(kind=DP), dimension(size(x)) :: f
-
-      do j = 1, size(x)
-        f(j) = func( j, x )
-      end do
-
-      h_new(1) = 0.0_DP
-
-      do j = 2, size(x) - 1
-        h_new(j) = h(j) + dt * f(j) + cfl * ( h(j-1) - 2.0_DP * h(j) + h(j+1) )
-      end do
-
-      ! set the boundary conditions again
-      h_new(1) = 90.0_DP
-      h_new(size(x)) = 70.0_DP
-    end subroutine fd1d_heat_explicit
-
-    subroutine fd1d_heat_explicit_cfl( k, t_num, t_min, t_max, x_num, x_min, x_max, cfl )
-
-      implicit none
-
-      !subroutine arguments
-      real(kind=DP), intent(out) :: cfl
-      real(kind=DP), intent(in) :: k
-      real(kind=DP), intent(in) :: t_max
-      real(kind=DP), intent(in) :: t_min
-      integer(kind=SI), intent(in) :: t_num
-      real(kind=DP), intent(in) :: x_max
-      real(kind=DP), intent(in) :: x_min
-      integer(kind=SI), intent(in) :: x_num
-
-      !Local arguments
-      real(kind=DP) :: dx
-      real(kind=DP) :: dt
-
-      dx = ( x_max - x_min ) / dble( x_num - 1 )
-      dt = ( t_max - t_min ) / dble( t_num - 1 )
-
-      cfl = k * dt / dx / dx
-
-      write ( *, '(a)' ) ' '
-      write ( *, '(a,g14.6)' ) '  CFL stability criterion value = ', cfl
-
-    end subroutine fd1d_heat_explicit_cfl
-
-    subroutine r8mat_write( output_filename, table )
-
-      implicit none
-
-      !Subroutine arguments
-      character(len=*), intent(in) :: output_filename
-      real(kind=DP), intent(in) :: table(:,:)
-
-      !Local arguments
-      integer(kind=SI) :: j     
-      integer(kind=SI) :: output_unit
-      character(len=30) :: string 
-
-      integer(kind=SI) :: m
-      integer(kind=SI) :: n
-      
-      m = size(table(:,:), 1)
-      n = size(table(:,:), 2)
-      output_unit = 10
-      open( unit = output_unit, file = output_filename, status = 'replace' )
-
-      write ( string, '(a1,i8,a1,i8,a1,i8,a1)' ) '(', m, 'g', 24, '.', 16, ')'
-
-      do j = 1, n
-        write ( output_unit, string ) table(1:m, j)
-      end do
-
-      close( unit = output_unit )
-    end subroutine r8mat_write
-
-    subroutine r8vec_linspace ( a_first, a_last, a )
-
-      implicit none
-
-      !Subroutine arguments
-      real(kind=DP), dimension(:), intent(out) :: a
-      real(kind=DP), intent(in) :: a_first
-      real(kind=DP), intent(in) :: a_last
-      
-      !Local arguments
-      integer(kind=SI) :: i
-
-      integer(kind=SI) :: n
-
-      n = size(a)
-
-      do i = 1, n
-        a(i) = ( dble( n - i ) * a_first + dble( i - 1 ) * a_last ) / dble( n - 1 )
-      end do
-
-    end subroutine r8vec_linspace
-
-    subroutine r8vec_write ( output_filename, x )
-
-      implicit none
-
-      !Subroutine arguments
-      character* ( * ), intent(in) :: output_filename
-      real(kind=DP), dimension(:), intent(in) :: x
-
-      !Local arguments
-      integer(kind=SI) :: m
-      integer(kind=SI) :: j
-      integer(kind=SI) :: output_unit
-
-      integer(kind=SI) :: n
-      
-      n = size(x)
-      output_unit = 11
-      open( unit = output_unit, file = output_filename, status = 'replace' )
-
-      do j = 1, n
-        write ( output_unit, '(2x,g24.16)' ) x(j)
-      end do
-
-      close ( unit = output_unit )
-  end subroutine r8vec_write
-
 
 end program fd1d_heat_explicit_prb
 
