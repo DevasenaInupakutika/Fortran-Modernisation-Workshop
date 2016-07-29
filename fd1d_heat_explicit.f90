@@ -116,6 +116,14 @@ program fd1d_heat_explicit_prb
       call r8vec_write( 't_test01.txt', t )
       call r8vec_write( 'x_test01.txt', x )
 
+      !Deallocate arrays
+      deallocate (h)
+      deallocate (h_new)
+      deallocate (hmat)
+      deallocate (t)
+      deallocate (x)
+
+
     contains
 
 end program fd1d_heat_explicit_prb
